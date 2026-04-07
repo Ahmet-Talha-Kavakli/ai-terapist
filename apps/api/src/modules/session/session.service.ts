@@ -64,6 +64,44 @@ export class SessionService {
   }
 
   /**
+   * Paginated session history for a user.
+   * Returns completed sessions ordered newest-first, with SOAP notes included.
+   */
+  async getHistory(
+    clerkId: string,
+    page    = 1,
+    perPage = 20,
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where:  { clerkId },
+      select: { id: true },
+    });
+    if (!user) return { sessions: [], total: 0 };
+
+    const [sessions, total] = await Promise.all([
+      this.prisma.session.findMany({
+        where:   { userId: user.id, status: 'completed' },
+        orderBy: { startedAt: 'desc' },
+        skip:    (page - 1) * perPage,
+        take:    perPage,
+        select: {
+          id:              true,
+          startedAt:       true,
+          endedAt:         true,
+          durationSeconds: true,
+          summary:         true,
+          soapNotes:       true,
+        },
+      }),
+      this.prisma.session.count({
+        where: { userId: user.id, status: 'completed' },
+      }),
+    ]);
+
+    return { sessions, total };
+  }
+
+  /**
    * Fetch the N most recent memory chunks for context injection.
    * Ordered by recency — semantic search (pgvector) is done in MemoryModule (Phase 9).
    */

@@ -8,6 +8,7 @@ import {
   type RemoteParticipant,
 } from 'livekit-client';
 import { getLiveKitToken } from '@/lib/livekit/client';
+import { posthog } from '@/lib/posthog/client';
 import { useSessionStore } from '../session.store';
 
 const ROOM_OPTIONS = {
@@ -94,10 +95,12 @@ export function useLiveKit() {
         room.on(RoomEvent.Connected, () => {
           setSessionId(room.name);
           setPhase('active');
+          posthog.capture('session_started', { room: room.name });
         });
 
         room.on(RoomEvent.Disconnected, () => {
           setPhase('ended');
+          posthog.capture('session_ended', { room: room.name });
         });
 
         room.on(RoomEvent.Reconnecting, () => {

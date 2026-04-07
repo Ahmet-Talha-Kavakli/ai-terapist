@@ -24,6 +24,7 @@ interface MessagePayload {
   sessionId:           string;
   transcript:          string;
   emotion?:            IEmotionSnapshot | null;
+  visionContext?:      string | null;
   conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }>;
 }
 
@@ -99,7 +100,7 @@ export class SessionGateway implements OnGatewayConnection, OnGatewayDisconnect 
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: MessagePayload,
   ) {
-    const { clerkUserId, sessionId, transcript, emotion, conversationHistory } = payload;
+    const { clerkUserId, sessionId, transcript, emotion, visionContext, conversationHistory } = payload;
     if (!transcript?.trim()) return;
 
     try {
@@ -115,7 +116,7 @@ export class SessionGateway implements OnGatewayConnection, OnGatewayDisconnect 
         conversationHistory,
         currentTranscript:   transcript,
         currentEmotion:      emotion ?? null,
-        visionContext:       null,
+        visionContext:       visionContext ?? null,
         sessionNumber:       sessionCount + 1,
 
         onChunk: (event) => {

@@ -25,6 +25,10 @@ interface SessionState {
   // Crisis
   lastCrisisScore: number;
 
+  // Vision (GPT-4o periodic webcam analysis)
+  visionContext: string | null;
+  setVisionContext: (ctx: string | null) => void;
+
   // Data channel messages (raw)
   lastDataMessage: string | null;
 
@@ -56,6 +60,7 @@ const INITIAL_STATE = {
   activeCrisis: null,
   lastCrisisScore: 0,
   lastDataMessage: null,
+  visionContext: null,
 };
 
 export const useSessionStore = create<SessionState>((set, get) => ({
@@ -96,6 +101,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   setLastCrisisScore: (score) => set({ lastCrisisScore: score }),
 
   addDataMessage: (msg) => set({ lastDataMessage: msg }),
+
+  setVisionContext: (ctx) => set({ visionContext: ctx }),
 
   reset: () => set(INITIAL_STATE),
 }));

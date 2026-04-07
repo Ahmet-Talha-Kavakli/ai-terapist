@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
+import { useAuth } from '@clerk/nextjs';
 import dynamic from 'next/dynamic';
 import { useSessionStore } from '../session.store';
-import { useLiveKit } from '../hooks/use-livekit';
+import { useSocketSession } from '../hooks/use-socket-session';
+import { useSpeechRecognition } from '../hooks/use-speech-recognition';
 import { useCrisisDetector } from '../hooks/use-crisis-detector';
 import { SessionHeader } from './session-header';
 import { TranscriptPanel } from './transcript-panel';
@@ -12,8 +14,7 @@ import { CrisisOverlay } from './crisis-overlay';
 import { UserCamera } from '@/features/vision/components/user-camera';
 
 /**
- * AvatarCanvas uses WebGL (Canvas API) — must be loaded client-side only.
- * The loading div is the same dark background so there's no layout shift.
+ * AvatarCanvas uses WebGL — must be loaded client-side only.
  */
 const AvatarCanvas = dynamic(
   () => import('@/features/avatar').then((m) => ({ default: m.AvatarCanvas })),
@@ -32,23 +33,67 @@ interface SessionViewProps {
 }
 
 export function SessionView({ roomName }: SessionViewProps) {
-  const phase            = useSessionStore((s) => s.phase);
-  const lastCrisisScore  = useSessionStore((s) => s.lastCrisisScore);
-  const { connect, disconnect } = useLiveKit();
+  const { userId } = useAuth();
 
+  const phase               = useSessionStore((s) => s.phase);
+  const sessionId           = useSessionStore((s) => s.sessionId);
+  const conversationHistory = useSessionStore((s) => s.conversationHistory);
+  const currentEmotion      = useSessionStore((s) => s.currentEmotion);
+  const emotionScore        = useSessionStore((s) => s.emotionScore);
+  const visionContext       = useSessionStore((s) => s.visionContext);
+  const lastCrisisScore     = useSessionStore((s) => s.lastCrisisScore);
+
+  const { connect, startSession, sendMessage, endSession, disconnect } = useSocketSession();
+
+  // Crisis detection (AI score + emotion + keywords)
   useCrisisDetector({ crisisScore: lastCrisisScore });
 
+  // STT → send message when final transcript arrives
+  const handleFinalTranscript = useCallback((transcript: string) => {
+    if (!sessionId || !userId) return;
+    sendMessage({
+      clerkUserId:         userId,
+      sessionId,
+      transcript,
+      emotion:             {
+        timestamp:       Date.now(),
+        dominant:        currentEmotion,
+        scores:          { neutral: 0, happy: 0, sad: 0, angry: 0, fearful: 0, disgusted: 0, surprised: 0, contempt: 0, [currentEmotion]: emotionScore },
+        fatigueScore:    0,
+        eyeContactScore: 0,
+      },
+      visionContext,
+      conversationHistory,
+    });
+  }, [sessionId, userId, currentEmotion, emotionScore, visionContext, conversationHistory, sendMessage]);
+
+  const { muted, setMuted } = useSpeechRecognition({ onFinalTranscript: handleFinalTranscript });
+
+  // Connect socket on mount; start session once connected
   useEffect(() => {
-    connect(roomName);
+    if (!userId) return;
+    connect();
+    // Give socket a tick to connect before starting session
+    const id = setTimeout(() => startSession(userId), 300);
     return () => {
+      clearTimeout(id);
       disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomName]);
+  }, [userId, roomName]);
+
+  const handleEnd = useCallback(() => {
+    if (!sessionId || !userId) {
+      disconnect();
+      return;
+    }
+    endSession(sessionId, userId, conversationHistory);
+    disconnect();
+  }, [sessionId, userId, conversationHistory, endSession, disconnect]);
 
   return (
     <div className="flex h-screen flex-col bg-gray-950 text-white">
-      {/* Crisis overlay — renders on top of everything when activated */}
+      {/* Crisis overlay — renders on top of everything */}
       <CrisisOverlay />
 
       <SessionHeader />
@@ -59,7 +104,7 @@ export function SessionView({ roomName }: SessionViewProps) {
           {phase === 'connecting' && (
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gray-900/80 backdrop-blur-sm">
               <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
-              <p className="mt-3 text-sm text-gray-400">Connecting to session…</p>
+              <p className="mt-3 text-sm text-gray-400">Connecting…</p>
             </div>
           )}
 
@@ -75,17 +120,13 @@ export function SessionView({ roomName }: SessionViewProps) {
             </div>
           ) : (
             <>
-              {/* AvatarCanvas fills the entire left panel — renders even while
-                  connecting so the 3D scene is already warm when active */}
               <AvatarCanvas />
-
-              {/* Webcam overlay — MediaPipe analysis + live feed */}
               <UserCamera />
             </>
           )}
         </section>
 
-        {/* Right: Conversation transcript */}
+        {/* Right: Conversation */}
         <aside className="flex w-96 flex-col border-l border-gray-800 bg-gray-950">
           <div className="border-b border-gray-800 px-4 py-3">
             <h2 className="text-sm font-medium text-gray-400">Conversation</h2>
@@ -98,7 +139,11 @@ export function SessionView({ roomName }: SessionViewProps) {
 
       {phase === 'active' && (
         <footer className="border-t border-gray-800 bg-gray-900 px-6 py-4">
-          <SessionControls onEnd={disconnect} />
+          <SessionControls
+            muted={muted}
+            onMuteToggle={() => setMuted((m) => !m)}
+            onEnd={handleEnd}
+          />
         </footer>
       )}
     </div>

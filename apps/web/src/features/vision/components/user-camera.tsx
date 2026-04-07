@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useSessionStore } from '../../session/session.store';
 import { useCamera } from '../hooks/use-camera';
 import { useMediaPipe } from '../hooks/use-mediapipe';
+import { useVisionCapture } from '../hooks/use-vision-capture';
 
 /**
  * Webcam capture component for real-time face/emotion analysis.
@@ -41,6 +42,9 @@ export function UserCamera() {
 
   // MediaPipe detection loop — driven by the same videoRef
   useMediaPipe(camera);
+
+  // GPT-4o Vision periodic capture (every 30 s)
+  useVisionCapture(videoRef);
 
   // Don't render the preview before the session is active
   if (phase === 'idle') return null;

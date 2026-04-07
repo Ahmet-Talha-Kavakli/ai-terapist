@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
+import { PostHogProvider, PostHogPageView } from '@/lib/posthog/provider';
 
 export const metadata: Metadata = {
   title: 'Lyra — AI Therapy',
@@ -26,8 +28,13 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
-      {children}
-    </NextIntlClientProvider>
+    <PostHogProvider>
+      <NextIntlClientProvider locale={locale} messages={messages}>
+        <Suspense fallback={null}>
+          <PostHogPageView />
+        </Suspense>
+        {children}
+      </NextIntlClientProvider>
+    </PostHogProvider>
   );
 }
