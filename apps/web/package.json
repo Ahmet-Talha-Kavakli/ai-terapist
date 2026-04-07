@@ -1,0 +1,50 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-therapist/types": "workspace:*",
+    "@ai-therapist/ui": "workspace:*",
+    "@clerk/nextjs": "^7.0.11",
+    "@hookform/resolvers": "^5.2.2",
+    "@livekit/components-react": "^2.9.20",
+    "@mediapipe/tasks-vision": "^0.10.34",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
+    "@sentry/nextjs": "^10.47.0",
+    "@supabase/ssr": "^0.10.0",
+    "@supabase/supabase-js": "^2.102.1",
+    "@tanstack/react-query": "^5.96.2",
+    "@upstash/redis": "^1.37.0",
+    "livekit-client": "^2.18.1",
+    "livekit-server-sdk": "^2.15.1",
+    "next": "16.2.2",
+    "next-intl": "^4.9.0",
+    "posthog-js": "^1.365.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-hook-form": "^7.72.1",
+    "svix": "^1.90.0",
+    "three": "^0.183.2",
+    "zod": "^4.3.6",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/three": "^0.183.1",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.2",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

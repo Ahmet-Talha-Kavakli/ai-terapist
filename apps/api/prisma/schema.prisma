@@ -1,0 +1,146 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [pgvector(map: "vector")]
+}
+
+model User {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clerkId      String        @unique @map("clerk_id")
+  email        String?
+  featureFlags Json          @default("{}") @map("feature_flags")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  profile      UserProfile?
+  consents     UserConsent[]
+  sessions     Session[]
+  memories     SessionMemory[]
+  wearableData WearableData[]
+  crisisLogs   CrisisLog[]
+  auditLogs    AuditLog[]
+
+  @@map("users")
+}
+
+model UserConsent {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  consentType String    @map("consent_type")
+  granted     Boolean
+  grantedAt   DateTime? @map("granted_at")
+  revokedAt   DateTime? @map("revoked_at")
+  version     String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_consents")
+}
+
+model UserProfile {
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId               String    @unique @map("user_id") @db.Uuid
+  goals                String[]
+  mentalHealthHistory  Json      @default("{}") @map("mental_health_history")
+  therapyPreferences   Json      @default("{}") @map("therapy_preferences")
+  personalitySnapshot  Json      @default("{}") @map("personality_snapshot")
+  riskLevel            String    @default("low") @map("risk_level")
+  disclaimerAcceptedAt DateTime? @map("disclaimer_accepted_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model Session {
+  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String          @map("user_id") @db.Uuid
+  startedAt       DateTime        @default(now()) @map("started_at")
+  endedAt         DateTime?       @map("ended_at")
+  durationSeconds Int?            @map("duration_seconds")
+  sessionType     String          @default("regular") @map("session_type")
+  status          String          @default("active")
+  summary         String?
+  soapNotes       Json?           @map("soap_notes")
+  homework        Json?
+  tokenCount      Int?            @map("token_count")
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events          SessionEvent[]
+  memories        SessionMemory[]
+  crisisLogs      CrisisLog[]
+
+  @@map("sessions")
+}
+
+model SessionEvent {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId String   @map("session_id") @db.Uuid
+  timestamp DateTime @default(now())
+  eventType String   @map("event_type")
+  payload   Json
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("session_events")
+}
+
+model SessionMemory {
+  id         String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String                       @map("user_id") @db.Uuid
+  sessionId  String?                      @map("session_id") @db.Uuid
+  content    String
+  embedding  Unsupported("vector(1536)")?
+  memoryType String                       @default("event") @map("memory_type")
+  createdAt  DateTime                     @default(now()) @map("created_at")
+  user       User                         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session    Session?                     @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@map("session_memories")
+}
+
+model WearableData {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  source          String
+  recordedAt      DateTime @map("recorded_at")
+  heartRate       Int?     @map("heart_rate")
+  hrv             Float?
+  sleepHours      Float?   @map("sleep_hours")
+  activityMinutes Int?     @map("activity_minutes")
+  stressScore     Float?   @map("stress_score")
+  rawPayload      Json?    @map("raw_payload")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("wearable_data")
+}
+
+model CrisisLog {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String?   @map("user_id") @db.Uuid
+  sessionId   String?   @map("session_id") @db.Uuid
+  detectedAt  DateTime  @default(now()) @map("detected_at")
+  threatType  String    @map("threat_type")
+  confidence  Float
+  actionTaken String?   @map("action_taken")
+  resolvedAt  DateTime? @map("resolved_at")
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  session     Session?  @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@map("crisis_logs")
+}
+
+model AuditLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  actorId    String?  @map("actor_id")
+  action     String
+  resource   String
+  resourceId String?  @map("resource_id") @db.Uuid
+  timestamp  DateTime @default(now())
+  ipAddress  String?  @map("ip_address")
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}
