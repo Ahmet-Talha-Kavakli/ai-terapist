@@ -25,7 +25,7 @@ export const intakeSchema = z.object({
     .max(1000, 'Please keep this under 1000 characters'),
 
   previousTherapyExperience: z.enum(['none', 'some', 'extensive'], {
-    required_error: 'Please select your experience level',
+    error: 'Please select your experience level',
   }),
 
   currentMedications: z.string().max(500).optional(),
@@ -35,11 +35,11 @@ export const intakeSchema = z.object({
   emergencyContactPhone: z.string().max(20).optional(),
 
   preferredSessionLength: z.enum(['30', '45', '60'], {
-    required_error: 'Please select a session length',
+    error: 'Please select a session length',
   }),
 
   preferredCommunicationStyle: z.enum(['direct', 'gentle', 'collaborative'], {
-    required_error: 'Please select a communication style',
+    error: 'Please select a communication style',
   }),
 });
 
