@@ -1,0 +1,39 @@
+{
+  "nav": {
+    "features": "Özellikler",
+    "about": "Hakkında",
+    "login": "Giriş Yap"
+  },
+  "landing": {
+    "hero_tag": "Yapay Zeka Destekli Terapi",
+    "hero_title": "Lyra",
+    "hero_subtitle": "Çok Yakında",
+    "hero_description": "Yeni bir terapötik deneyim. Her zaman erişilebilir, derin biçimde kişisel ve özenle tasarlanmış.",
+    "scroll_hint": "Keşfetmek için kaydır",
+    "cta_choose": "AI Terapistini Seç",
+    "cta_start": "Seansa Başla",
+    "section1_title": "Her Zaman Yanında",
+    "section1_body": "Lyra 7/24 erişilebilir — bekleme odası yok, randevu yok. İhtiyacın olduğunda terapistin hazır.",
+    "section2_title": "Kanıta Dayalı Yaklaşımlar",
+    "section2_body": "BDT, DBT, ACT, Somatik ve Psikodinamik çerçeveler üzerine inşa edilmiş. Lyra sana en uygun yaklaşımı seçer.",
+    "section3_title": "Gizli ve Güvenli",
+    "section3_body": "Seanslarınız uçtan uca şifrelenir. Paylaştıklarınız yalnızca sen ve Lyra arasında kalır.",
+    "footer_rights": "Tüm hakları saklıdır."
+  },
+  "therapist": {
+    "choose_title": "AI Terapistini Seç",
+    "choose_subtitle": "Bugün çalışmak istediğin terapisti seç.",
+    "lyra_name": "Lyra",
+    "lyra_specialty": "Bilişsel & Somatik Terapi",
+    "lyra_description": "Sıcak, sabırlı ve derin sezgili. Lyra kaygı, tükenmişlik ve duygusal düzenleme konularında uzmanlaşmıştır.",
+    "start_session": "Seansa Başla",
+    "close": "Kapat"
+  },
+  "auth": {
+    "signed_in_as": "Oturum açıldı",
+    "sign_out": "Çıkış Yap"
+  },
+  "onboarding": {
+    "back_to_home": "Ana Sayfaya Dön"
+  }
+}

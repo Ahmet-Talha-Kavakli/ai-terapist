@@ -1,0 +1,39 @@
+{
+  "nav": {
+    "features": "Features",
+    "about": "About",
+    "login": "Log In"
+  },
+  "landing": {
+    "hero_tag": "AI-Powered Therapy",
+    "hero_title": "Lyra",
+    "hero_subtitle": "Coming Soon",
+    "hero_description": "A new kind of therapeutic experience. Always available, deeply personal, and built with care.",
+    "scroll_hint": "Scroll to explore",
+    "cta_choose": "Choose Your AI Therapist",
+    "cta_start": "Start a Session",
+    "section1_title": "Always There for You",
+    "section1_body": "Lyra is available 24/7 — no waiting rooms, no scheduling. Whenever you need support, your therapist is ready.",
+    "section2_title": "Evidence-Based Approaches",
+    "section2_body": "Built on CBT, DBT, ACT, Somatic and Psychodynamic frameworks — Lyra adapts its approach to what works best for you.",
+    "section3_title": "Private & Secure",
+    "section3_body": "Your sessions are encrypted end-to-end. What you share stays between you and Lyra.",
+    "footer_rights": "All rights reserved."
+  },
+  "therapist": {
+    "choose_title": "Choose Your AI Therapist",
+    "choose_subtitle": "Select the therapist you'd like to work with today.",
+    "lyra_name": "Lyra",
+    "lyra_specialty": "Cognitive & Somatic Therapy",
+    "lyra_description": "Warm, patient, and deeply intuitive. Lyra specializes in anxiety, burnout, and emotional regulation.",
+    "start_session": "Start Session",
+    "close": "Close"
+  },
+  "auth": {
+    "signed_in_as": "Signed in",
+    "sign_out": "Sign Out"
+  },
+  "onboarding": {
+    "back_to_home": "Back to Home"
+  }
+}

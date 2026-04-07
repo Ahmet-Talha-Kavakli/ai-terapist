@@ -1,5 +1,8 @@
 import type { NextConfig } from 'next';
 import { withSentryConfig } from '@sentry/nextjs';
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const nextConfig: NextConfig = {
   // Enable instrumentation hook (Sentry server-side init)
@@ -43,7 +46,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
+export default withSentryConfig(withNextIntl(nextConfig), {
   // Sentry project org/project for source map uploads
   org:     process.env['SENTRY_ORG'],
   project: process.env['SENTRY_PROJECT'],
