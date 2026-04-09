@@ -32,13 +32,18 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.redirect(url);
   }
 
+  // Skip intl middleware for API routes
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+
   // Let next-intl handle locale routing
   return intlMiddleware(req);
 });
 
 export const config = {
   matcher: [
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest|glb|gltf|bin)).*)',
     '/(api|trpc)(.*)',
   ],
 };

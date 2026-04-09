@@ -21,9 +21,6 @@ import { useAvatarEmotion } from '../hooks/use-avatar-emotion';
  */
 const MODEL_PATH = '/models/therapist.glb';
 
-// Preload during idle time so the first session render is instant
-useGLTF.preload(MODEL_PATH);
-
 /**
  * Loads the Reallusion GLB and wires all three animation hooks:
  *   idle  → eye blink + head sway

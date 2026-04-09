@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { TherapistService } from './therapist.service.js';
-import { TtsService } from './tts.service.js';
+import { TherapistService } from './therapist.service';
+import { TtsService } from './tts.service';
 
 @Module({
   providers: [TherapistService, TtsService],

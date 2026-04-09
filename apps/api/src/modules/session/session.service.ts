@@ -1,13 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../shared/prisma/prisma.service.js';
+import { PrismaService } from '../../shared/prisma/prisma.service';
 import type { IUserProfile, IMemoryChunk } from '@ai-therapist/types';
 
 @Injectable()
 export class SessionService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /** Resolve a Clerk user ID to the internal DB UUID, creating the user if missing. */
+  private async resolveUserId(clerkId: string): Promise<string> {
+    const user = await this.prisma.user.upsert({
+      where:  { clerkId },
+      create: { clerkId },
+      update: {},
+      select: { id: true },
+    });
+    return user.id;
+  }
+
   /** Create a session record and return its ID. */
-  async startSession(userId: string): Promise<string> {
+  async startSession(clerkId: string): Promise<string> {
+    const userId = await this.resolveUserId(clerkId);
     const session = await this.prisma.session.create({
       data: { userId, status: 'active', sessionType: 'regular' },
       select: { id: true },
@@ -37,7 +49,9 @@ export class SessionService {
    * Fetch the user's Prisma profile (cast to IUserProfile shape).
    * Returns null if profile not found (e.g. onboarding incomplete).
    */
-  async getUserProfile(userId: string): Promise<IUserProfile | null> {
+  async getUserProfile(clerkId: string): Promise<IUserProfile | null> {
+    const userId = await this.resolveUserId(clerkId).catch(() => null);
+    if (!userId) return null;
     const profile = await this.prisma.userProfile.findUnique({
       where: { userId },
     });
@@ -57,7 +71,9 @@ export class SessionService {
   }
 
   /** Count completed sessions for a user (for session number in prompt). */
-  async getSessionCount(userId: string): Promise<number> {
+  async getSessionCount(clerkId: string): Promise<number> {
+    const userId = await this.resolveUserId(clerkId).catch(() => null);
+    if (!userId) return 0;
     return this.prisma.session.count({
       where: { userId, status: 'completed' },
     });
@@ -105,7 +121,9 @@ export class SessionService {
    * Fetch the N most recent memory chunks for context injection.
    * Ordered by recency — semantic search (pgvector) is done in MemoryModule (Phase 9).
    */
-  async getRecentMemories(userId: string, limit = 5): Promise<IMemoryChunk[]> {
+  async getRecentMemories(clerkId: string, limit = 5): Promise<IMemoryChunk[]> {
+    const userId = await this.resolveUserId(clerkId).catch(() => null);
+    if (!userId) return [];
     const rows = await this.prisma.sessionMemory.findMany({
       where:   { userId },
       orderBy: { createdAt: 'desc' },

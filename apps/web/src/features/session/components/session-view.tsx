@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@clerk/nextjs';
+import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useSessionStore } from '../session.store';
 import { useSocketSession } from '../hooks/use-socket-session';
@@ -43,10 +44,30 @@ export function SessionView({ roomName }: SessionViewProps) {
   const visionContext       = useSessionStore((s) => s.visionContext);
   const lastCrisisScore     = useSessionStore((s) => s.lastCrisisScore);
 
+  const avatarAudioSrc = useSessionStore((s) => s.avatarAudioSrc);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   const { connect, startSession, sendMessage, endSession, disconnect } = useSocketSession();
 
   // Crisis detection (AI score + emotion + keywords)
   useCrisisDetector({ crisisScore: lastCrisisScore });
+
+  // Play TTS audio when avatarAudioSrc changes; mute mic while AI speaks
+  useEffect(() => {
+    if (!avatarAudioSrc) return;
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    const audio = new Audio(avatarAudioSrc);
+    audioRef.current = audio;
+    setMutedRef.current(true);                       // mute mic while AI speaks
+    audio.onended = () => setMutedRef.current(false); // unmute when audio finishes
+    audio.play().catch((err) => {
+      console.warn('[TTS] Audio play failed:', err);
+      setMutedRef.current(false);                    // unmute on error too
+    });
+    return () => { audio.pause(); };
+  }, [avatarAudioSrc]);
 
   // STT → send message when final transcript arrives
   const handleFinalTranscript = useCallback((transcript: string) => {
@@ -67,7 +88,13 @@ export function SessionView({ roomName }: SessionViewProps) {
     });
   }, [sessionId, userId, currentEmotion, emotionScore, visionContext, conversationHistory, sendMessage]);
 
-  const { muted, setMuted } = useSpeechRecognition({ onFinalTranscript: handleFinalTranscript });
+  // Auto-detect language from last AI response (Turkish chars → tr-TR)
+  const lastAiContent = conversationHistory.filter((m) => m.role === 'assistant').at(-1)?.content ?? '';
+  const sttLang = /[ğüöçışĞÜÖÇİŞ]/.test(lastAiContent) ? 'tr-TR' : 'en-US';
+
+  const { muted, setMuted } = useSpeechRecognition({ onFinalTranscript: handleFinalTranscript, lang: sttLang });
+  const setMutedRef = useRef(setMuted);
+  useEffect(() => { setMutedRef.current = setMuted; }, [setMuted]);
 
   // Connect socket on mount; start session once connected
   useEffect(() => {
@@ -111,12 +138,12 @@ export function SessionView({ roomName }: SessionViewProps) {
           {phase === 'ended' ? (
             <div className="flex h-full w-full flex-col items-center justify-center gap-4">
               <p className="text-lg text-gray-300">Session ended</p>
-              <a
+              <Link
                 href="/dashboard"
                 className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500"
               >
                 Back to Dashboard
-              </a>
+              </Link>
             </div>
           ) : (
             <>

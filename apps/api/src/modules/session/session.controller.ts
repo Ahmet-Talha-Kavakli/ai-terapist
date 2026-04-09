@@ -6,8 +6,8 @@ import {
   BadRequestException,
   UseGuards,
 } from '@nestjs/common';
-import { SessionService } from './session.service.js';
-import { ClerkAuthGuard } from '../../shared/guards/clerk-auth.guard.js';
+import { SessionService } from './session.service';
+import { ClerkAuthGuard } from '../../shared/guards/clerk-auth.guard';
 
 @Controller('session')
 @UseGuards(ClerkAuthGuard)

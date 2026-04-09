@@ -1,5 +1,5 @@
-import { inngest } from './inngest.client.js';
-import { PrismaClient as PrismaClientCtor } from '../../generated/prisma/client.js';
+import { inngest } from './inngest.client';
+import { PrismaClient as PrismaClientCtor } from '@prisma/client';
 import OpenAI from 'openai';
 
 // Prisma 7 exports PrismaClient as a const — cast to newable for instantiation

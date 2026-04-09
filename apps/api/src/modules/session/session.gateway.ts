@@ -9,10 +9,10 @@ import {
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import { TherapistService } from '../ai-therapist/therapist.service.js';
-import { TtsService } from '../ai-therapist/tts.service.js';
-import { SessionService } from './session.service.js';
-import { inngest } from '../../inngest/inngest.client.js';
+import { TherapistService } from '../ai-therapist/therapist.service';
+import { TtsService } from '../ai-therapist/tts.service';
+import { SessionService } from './session.service';
+import { inngest } from '../../inngest/inngest.client';
 import type { IUserProfile, IEmotionSnapshot } from '@ai-therapist/types';
 
 interface StartSessionPayload {
@@ -110,6 +110,9 @@ export class SessionGateway implements OnGatewayConnection, OnGatewayDisconnect 
         this.sessions.getSessionCount(clerkUserId),
       ]);
 
+      // TTS starts as soon as stream closes (in parallel with crisis scoring)
+      let ttsPromise: Promise<string | null> | null = null;
+
       await this.therapist.streamResponse({
         userProfile:         userProfile ?? { ...FALLBACK_PROFILE, userId: clerkUserId },
         recentMemories,
@@ -123,10 +126,14 @@ export class SessionGateway implements OnGatewayConnection, OnGatewayDisconnect 
           client.emit('ai:chunk', { text: event.text });
         },
 
+        onStreamComplete: (fullText) => {
+          ttsPromise = this.tts.synthesise(fullText);
+        },
+
         onDone: async (event) => {
-          const [audioSrc] = await Promise.all([
-            this.tts.synthesise(event.fullText),
-          ]);
+          const audioSrc = ttsPromise
+            ? await ttsPromise
+            : await this.tts.synthesise(event.fullText);
           if (audioSrc) client.emit('ai:audio', { audioSrc, sessionId });
           client.emit('ai:done', { crisisScore: event.crisisScore ?? 0 });
         },

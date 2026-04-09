@@ -1,14 +1,14 @@
 import { Module, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { PrismaModule } from './shared/prisma/prisma.module.js';
-import { AuditLogMiddleware } from './shared/middleware/audit-log.middleware.js';
-import { SessionModule } from './modules/session/session.module.js';
-import { AiTherapistModule } from './modules/ai-therapist/ai-therapist.module.js';
-import { MemoryModule } from './modules/memory/memory.module.js';
-import { UserModule } from './modules/user/user.module.js';
-import { InngestModule } from './inngest/inngest.module.js';
-import { AppController } from './app.controller.js';
+import { PrismaModule } from './shared/prisma/prisma.module';
+import { AuditLogMiddleware } from './shared/middleware/audit-log.middleware';
+import { SessionModule } from './modules/session/session.module';
+import { AiTherapistModule } from './modules/ai-therapist/ai-therapist.module';
+import { MemoryModule } from './modules/memory/memory.module';
+import { UserModule } from './modules/user/user.module';
+import { InngestModule } from './inngest/inngest.module';
+import { AppController } from './app.controller';
 
 @Module({
   controllers: [AppController],

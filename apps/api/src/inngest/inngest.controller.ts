@@ -1,8 +1,8 @@
 import { All, Controller, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { serve } from 'inngest/express';
-import { inngest } from './inngest.client.js';
-import { postSessionJob } from './post-session.job.js';
+import { inngest } from './inngest.client';
+import { postSessionJob } from './post-session.job';
 
 const handler = serve({
   client:    inngest,

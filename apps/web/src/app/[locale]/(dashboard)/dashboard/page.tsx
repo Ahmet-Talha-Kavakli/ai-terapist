@@ -1,5 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { TherapistModalTrigger } from '@/features/landing/components/therapist-modal-trigger';
 
 /**
@@ -49,24 +50,24 @@ export default async function DashboardPage({
         <TherapistModalTrigger />
 
         {/* History */}
-        <a
+        <Link
           href={`${prefix}/history`}
           className="group rounded-2xl border border-white/5 bg-white/[0.02] p-6 transition-all hover:border-white/10 hover:bg-white/[0.04]"
         >
           <div className="mb-4 text-2xl">📋</div>
           <h2 className="mb-1 text-lg font-semibold text-white">Session History</h2>
           <p className="text-sm text-gray-500">Review your past sessions and progress notes.</p>
-        </a>
+        </Link>
 
         {/* Profile */}
-        <a
+        <Link
           href={`${prefix}/profile`}
           className="group rounded-2xl border border-white/5 bg-white/[0.02] p-6 transition-all hover:border-white/10 hover:bg-white/[0.04]"
         >
           <div className="mb-4 text-2xl">⚙️</div>
           <h2 className="mb-1 text-lg font-semibold text-white">Your Profile</h2>
           <p className="text-sm text-gray-500">Manage your therapy preferences and goals.</p>
-        </a>
+        </Link>
       </div>
     </main>
   );

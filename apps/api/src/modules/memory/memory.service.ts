@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
-import { PrismaService } from '../../shared/prisma/prisma.service.js';
+import { PrismaService } from '../../shared/prisma/prisma.service';
 import type { IMemoryChunk, TMemoryType } from '@ai-therapist/types';
 
 export interface SaveMemoryInput {

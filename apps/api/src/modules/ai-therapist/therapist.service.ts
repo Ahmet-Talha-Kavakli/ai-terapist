@@ -26,9 +26,11 @@ export interface TherapistStreamOptions {
   currentEmotion:      IEmotionSnapshot | null;
   visionContext:       string | null;
   sessionNumber:       number;
-  onChunk: (event: StreamChunkEvent)           => void;
-  onDone:  (event: StreamDoneEvent)            => void | Promise<void>;
-  onError: (err: Error)                        => void;
+  onChunk:            (event: StreamChunkEvent)  => void;
+  /** Fires immediately after the stream closes, before crisis scoring. */
+  onStreamComplete?:  (fullText: string)          => void;
+  onDone:             (event: StreamDoneEvent)    => void | Promise<void>;
+  onError:            (err: Error)                => void;
 }
 
 /** Keywords that immediately set crisis score to 9 without an extra LLM call. */
@@ -62,7 +64,7 @@ export class TherapistService {
     const {
       userProfile, recentMemories, conversationHistory,
       currentTranscript, currentEmotion, visionContext,
-      sessionNumber, onChunk, onDone, onError,
+      sessionNumber, onChunk, onStreamComplete, onDone, onError,
     } = opts;
 
     const systemPrompt = buildTherapistSystemPrompt({
@@ -100,6 +102,9 @@ export class TherapistService {
           onChunk({ type: 'chunk', text: delta });
         }
       }
+
+      // Notify gateway immediately so it can start TTS in parallel
+      onStreamComplete?.(fullText);
 
       // Fast-path: keyword match skips the LLM scoring call for clear signals
       const lowerTranscript = currentTranscript.toLowerCase();

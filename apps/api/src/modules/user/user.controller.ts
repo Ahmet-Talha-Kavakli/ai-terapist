@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Headers, UseGuards, BadRequestException, NotFoundException } from '@nestjs/common';
-import { UserService } from './user.service.js';
-import { ClerkAuthGuard } from '../../shared/guards/clerk-auth.guard.js';
+import { UserService } from './user.service';
+import { ClerkAuthGuard } from '../../shared/guards/clerk-auth.guard';
 
 interface ConsentItem {
   consentType: string;
